@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Mike Croucher Feb. 18, 2024
-
 # This script checks and updates the system.restart authorization rule on macOS systems.
 # It ensures that users can restart the system without needing administrator credentials.
+# Author - Mike Croucher
+# Date - Feb. 18, 2025
 
 # Function to check the current status of the system.restart authorization rule
 check_restart_permission() {
