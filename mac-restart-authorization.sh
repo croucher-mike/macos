@@ -7,7 +7,11 @@
 
 # Function to check the current status of the system.restart authorization rule
 check_restart_permission() {
-    /usr/bin/security authorizationdb read system.restart 2>/dev/null | grep -c "allow"
+    if ! /usr/bin/security authorizationdb read system.restart 2>/dev/null | grep -qc "allow"; then
+        echo 0
+    else
+        echo 1
+    fi
 }
 
 # Function to update the system.restart authorization rule
@@ -21,10 +25,12 @@ update_restart_permission() {
 }
 
 # Check the current status of the system.restart authorization rule
+echo "Checking current system.restart authorization rule status..."
 RESTART_PERMISSION=$(check_restart_permission)
 
 if [ "$RESTART_PERMISSION" -ne 1 ]; then
     # Allow all users to restart the system without requiring admin credentials
+    echo "Updating system.restart authorization rule to allow..."
     update_restart_permission
 else
     echo "The system.restart authorization rule is already set to allow."
