@@ -2,7 +2,6 @@
 -- If the user chooses to restart, it prevents macOS from reopening apps after the restart and then restarts the computer.
 -- If the user cancels or the dialog times out, it displays an appropriate message.
 -- Author: Mike Croucher
--- Version: 1.0
 -- Date: February 26, 2025
 
 try
