@@ -1,3 +1,28 @@
+"""
+This script processes emails from the 'Mac Package Updates' folder in Apple Mail. 
+It extracts 'Title' and 'Version' information from raw email content, 
+ignores certain excluded titles, and writes the results to a text file.
+
+Expected input:
+- AppleScript to extract email content from the 'Mac Package Updates' folder.
+- Folder path on the Desktop: '~/Desktop/Mac Package Updates/'.
+
+Expected output:
+- raw_email.txt: Raw email content saved on the Desktop.
+- Mac Package Updates.rtf: Processed information on package titles and versions saved.
+
+Steps:
+1. Set up logging and ensure the necessary folders exist.
+2. Parse input arguments to allow user customization of the folder name.
+3. Define file paths based on user input.
+4. Use AppleScript to extract raw email content from the specified folder in Apple Mail.
+5. Save the raw email content to a text file.
+6. Extract 'Title' and 'Version' information from the raw email content using regex.
+7. Ignore certain excluded titles and keep the newest version for each title.
+8. Write the extracted information to an RTF file with proper formatting.
+9. Log the progress and handle any errors that occur during the process.
+"""
+
 import re
 import os
 import subprocess
@@ -15,21 +40,6 @@ log_file = os.path.join(log_folder, 'script_log.txt')
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 logging.info("Started processing emails.")
-
-# Documentation for the script
-"""
-This script processes emails from the 'Mac Package Updates' folder in Apple Mail. 
-It extracts 'Title' and 'Version' information from raw email content, 
-ignores certain excluded titles, and writes the results to a text file.
-
-Expected input:
-- AppleScript to extract email content from the 'Mac Package Updates' folder.
-- Folder path on the Desktop: '~/Desktop/Mac Package Updates/'.
-
-Expected output:
-- raw_email.txt: Raw email content saved on the Desktop.
-- Mac Package Updates.rtf: Processed information on package titles and versions saved.
-"""
 
 # Parse input arguments to allow user customization
 parser = argparse.ArgumentParser(description='Process raw email content for package updates.')
