@@ -1,8 +1,9 @@
 -- This script displays a dialog prompting the user to save their work and restart the computer.
--- If the user chooses to restart, it prevents macOS from reopening apps after the restart and then restarts the computer.
+-- If the user chooses to restart, it prevents macOS from reopening apps after the restart, and then the computer is restarted.
 -- If the user cancels or the dialog times out, it displays an appropriate message.
 -- Author: Mike Croucher
 -- Date: February 26, 2025
+-- Note: This script should be exported as an application, and the icon needs to be manually updated.
 
 try
     -- Display dialog to prompt user to save work and restart
