@@ -1,3 +1,4 @@
+import configparser
 import re
 import os
 import subprocess
@@ -6,8 +7,12 @@ from datetime import datetime
 import argparse
 from pathlib import Path
 
+# Load configuration
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 # Ensure the folder for log file exists
-log_folder = os.path.expanduser('~/Desktop/Mac Package Updates/')
+log_folder = os.path.expanduser(config['Paths']['LogFolder'])
 Path(log_folder).mkdir(parents=True, exist_ok=True)
 
 # Set up logging to track script progress and errors
@@ -64,7 +69,7 @@ excluded_titles = {
 # AppleScript to search only in "Mac Package Updates" folder and return raw email content
 apple_script = f'''
 tell application "Mail"
-    set senderEmail to "oit-macmgmt-sa@ohio.edu"
+    set senderEmail to "{config['Email']['SenderEmail']}"
     set rawEmailContent to ""
     set targetMailbox to missing value
     set desktopPath to POSIX path of (path to desktop)
@@ -114,49 +119,54 @@ end tell
 '''
 
 # Run the AppleScript and capture the output
-result = subprocess.run(["osascript", "-e", apple_script], capture_output=True, text=True)
-if result.returncode != 0:
-    logging.error(f"Error executing AppleScript: {result.stderr}")
+try:
+    result = subprocess.run(["osascript", "-e", apple_script], capture_output=True, text=True)
+    if result.returncode != 0:
+        logging.error(f"Error executing AppleScript: {result.stderr}")
+        exit(1)
+    raw_email_content = result.stdout
+    logging.info("Successfully extracted emails.")
+except Exception as e:
+    logging.error(f"An unexpected error occurred: {e}")
     exit(1)
 
-raw_email_content = result.stdout
-logging.info("Successfully extracted emails.")
-
-# Function to extract title and version
-def extract_title_and_version(email_content, output_file, date):
-    """Extracts title and version information from the raw email content and writes it to an RTF file."""
-    # Regex pattern to match Title and Version
-    title_version_pattern = r"Title:\s*(.*?)<br>Version:\s*(.*?)<br>"
-    matches = re.findall(title_version_pattern, email_content)
-
+def get_title_version_dict(matches):
     title_version_dict = {}
-
-    # Compare versions and keep the newest version for each title
     for title, version in matches:
         if title in excluded_titles:
-            continue  # Skip excluded titles
-
+            continue
         if title in title_version_dict:
             existing_version = title_version_dict[title]
-            if version > existing_version:  # Update to the newer version
+            if version > existing_version:
                 title_version_dict[title] = version
         else:
             title_version_dict[title] = version
+    return title_version_dict
 
-    # RTF header and formatting
+def write_rtf_content(title_version_dict, output_file, date):
     rtf_content = r"{\rtf1\ansi\deff0 {\fonttbl {\f0\fswiss Helvetica;}}"
     rtf_content += r"\ The following applications have been added to Patch Management. \par"
-
     for title, version in title_version_dict.items():
         rtf_content += fr"\ {title} \ {version} \par"
-
     rtf_content += fr"\par\ Downloaded, repackaged, and signed on {date} by Mike \par"
     rtf_content += fr"\ Downloaded on {date} by Mike \par"
-    rtf_content += "}"  # End of RTF document
-
-    # Write to an RTF file
+    rtf_content += "}"
     with open(output_file, 'w', encoding='utf-8') as out_file:
         out_file.write(rtf_content)
+
+def extract_title_and_version(email_content, output_file, date):
+    """
+    Extracts title and version information from the raw email content and writes it to an RTF file.
+    
+    Args:
+        email_content (str): The raw email content.
+        output_file (str): The path to the output RTF file.
+        date (str): The current date.
+    """
+    title_version_pattern = re.compile(r"Title:\s*(.*?)<br>Version:\s*(.*?)<br>")
+    matches = title_version_pattern.findall(email_content)
+    title_version_dict = get_title_version_dict(matches)
+    write_rtf_content(title_version_dict, output_file, date)
 
 # Extract data from raw email content
 extract_title_and_version(raw_email_content, output_file_path, current_date)
